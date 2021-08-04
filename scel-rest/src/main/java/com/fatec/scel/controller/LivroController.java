@@ -63,11 +63,15 @@ public class LivroController {
 	}
 
 	@GetMapping("v1/livros/{isbn}")
-	public ResponseEntity<Livro> findByIsbn(@PathVariable String isbn) {
+	public ResponseEntity<?> findByIsbn(@PathVariable String isbn) {
 		logger.info(">>>>>> 1. controller chamou servico consulta por isbn => " + isbn);
-
-		return servico.consultaPorIsbn(isbn).map(record -> ResponseEntity.ok().body(record))
-				.orElse(ResponseEntity.notFound().build());
+		Optional<Livro> umLivro = servico.consultaPorIsbn(isbn);
+		ResponseEntity<?> resposta = null;
+		if (umLivro.isPresent())
+			resposta = new ResponseEntity<Livro>(umLivro.get(), HttpStatus.OK);
+		else
+			resposta = new ResponseEntity<String>("ISBN não localizado",HttpStatus.OK);
+		return resposta;
 	}
 
 	@DeleteMapping("v1/livros/{isbn}")
@@ -79,7 +83,7 @@ public class LivroController {
 			return ResponseEntity.ok().build();
 		} else {
 			logger.info(">>>>>> 3. controller chamou servico delete isbn nao localizado => " + isbn);
-			return ResponseEntity.notFound().build();
+			return ResponseEntity.ok().body("Livro não encontrado");
 		}
 
 	}
