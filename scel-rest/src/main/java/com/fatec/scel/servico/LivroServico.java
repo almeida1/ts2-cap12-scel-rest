@@ -9,7 +9,7 @@ public interface LivroServico {
 	List<Livro> consultaTodos();
 	Optional<Livro> consultaPorIsbn(String isbn);
 	Optional<Livro> consultaPorId(Long id);
-	Optional<Livro> save(Livro Livro);
+	Livro save(Livro Livro);
 	void delete (Long id);
 
 

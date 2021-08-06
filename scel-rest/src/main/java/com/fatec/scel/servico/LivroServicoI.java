@@ -25,9 +25,9 @@ public class LivroServicoI implements LivroServico {
 	}
 
 	@Override
-	public Optional<Livro> save(Livro livro) {
+	public Livro save(Livro livro) {
 		logger.info(">>>>>> 2. servico save chamado");
-		return Optional.ofNullable(repository.save(livro));
+		return repository.save(livro);
 
 	}
 

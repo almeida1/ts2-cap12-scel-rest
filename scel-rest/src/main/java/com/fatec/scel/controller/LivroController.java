@@ -38,17 +38,15 @@ public class LivroController {
 		ResponseEntity<Object> response = null;
 		if (result.hasErrors()) {
 			logger.info(">>>>>> 1. controller chamou servico save - erro detectado no bean");
-			response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			response = new ResponseEntity<>("Dados inválidos", HttpStatus.OK);
 		} else {
 			logger.info(">>>>>> 1. controller chamou servico save sem erro no bean validation");
 			Optional<Livro> umLivro = servico.consultaPorIsbn(livro.getIsbn());
 			if (umLivro.isPresent()) {
-
-				response = ResponseEntity.badRequest().body("ja cadastrado");
+				response = ResponseEntity.ok().body("Livro já cadastrado");
 			} else {
-
-				servico.save(livro);
-				response = new ResponseEntity<>(HttpStatus.CREATED);
+				Livro novoLivro = servico.save(livro);
+				response = new ResponseEntity<>(novoLivro, HttpStatus.CREATED);
 			}
 
 		}
@@ -89,16 +87,16 @@ public class LivroController {
 	}
 
 	@PutMapping("v1/livros")
-	public ResponseEntity<Livro> replaceLivro(@RequestBody Livro livro) {
+	public ResponseEntity<?> replaceLivro(@RequestBody Livro livro) {
 		Optional<Livro> umLivro = servico.consultaPorIsbn(livro.getIsbn());
 		if (umLivro.isPresent()) {
 			Livro l = umLivro.get();
 			l.setAutor(livro.getAutor());
 			l.setTitulo(livro.getTitulo());
-			servico.save(l);
-			return ResponseEntity.ok(l);
+			Livro livroAtualizado = servico.save(l);
+			return ResponseEntity.ok().body(livroAtualizado);
 		} else {
-			return ResponseEntity.notFound().build();
+			return ResponseEntity.ok().body("Livro não encontrado");
 		}
 
 	}
