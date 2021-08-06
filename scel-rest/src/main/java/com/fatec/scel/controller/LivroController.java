@@ -26,78 +26,55 @@ import com.fatec.scel.model.Livro;
 import com.fatec.scel.servico.LivroServico;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1/livros")
 public class LivroController {
 	@Autowired
 	LivroServico servico;
 
 	Logger logger = LogManager.getLogger(LivroController.class);
 
-	@PostMapping("/v1/livros")
-	public ResponseEntity<Object> create(@RequestBody @Valid Livro livro, BindingResult result) {
-		ResponseEntity<Object> response = null;
-		if (result.hasErrors()) {
-			logger.info(">>>>>> 1. controller chamou servico save - erro detectado no bean");
-			response = new ResponseEntity<>("Dados inválidos", HttpStatus.OK);
-		} else {
-			logger.info(">>>>>> 1. controller chamou servico save sem erro no bean validation");
-			Optional<Livro> umLivro = servico.consultaPorIsbn(livro.getIsbn());
-			if (umLivro.isPresent()) {
-				response = ResponseEntity.ok().body("Livro já cadastrado");
-			} else {
-				Livro novoLivro = servico.save(livro);
-				response = new ResponseEntity<>(novoLivro, HttpStatus.CREATED);
-			}
-
-		}
-
-		return response;
+	@PostMapping
+	public ResponseEntity<?> create(@RequestBody @Valid Livro livro, BindingResult result) {
+		return servico.save(livro, result);
 	}
 
 	@CrossOrigin // desabilita o cors do spring security
-	@GetMapping("/v1/livros")
+	@GetMapping
 	public ResponseEntity<List<Livro>> consultaTodos() {
+		logger.info(">>>>>> controller chamou servico consulta todos");
 		return ResponseEntity.ok().body(servico.consultaTodos());
 	}
 
-	@GetMapping("v1/livros/{isbn}")
-	public ResponseEntity<?> findByIsbn(@PathVariable String isbn) {
-		logger.info(">>>>>> 1. controller chamou servico consulta por isbn => " + isbn);
-		Optional<Livro> umLivro = servico.consultaPorIsbn(isbn);
-		ResponseEntity<?> resposta = null;
-		if (umLivro.isPresent())
-			resposta = new ResponseEntity<Livro>(umLivro.get(), HttpStatus.OK);
-		else
-			resposta = new ResponseEntity<String>("ISBN não localizado",HttpStatus.OK);
-		return resposta;
+	@GetMapping("/{isbn}")
+	public ResponseEntity<Livro> findByIsbn(@PathVariable String isbn) {
+		logger.info(">>>>>> controller chamou servico consulta por isbn => " + isbn);
+		return Optional.ofNullable(servico.consultaPorIsbn(isbn)).map(record -> ResponseEntity.ok().body(record) ).orElse(ResponseEntity.notFound().build());
+//		Optional<Livro> umLivro = servico.consultaPorIsbn(isbn);
+//		ResponseEntity<?> resposta = null;
+//		if (umLivro.isPresent())
+//			resposta = new ResponseEntity<Livro>(umLivro.get(), HttpStatus.OK);
+//		else
+//			resposta = new ResponseEntity<String>("ISBN não localizado",HttpStatus.OK);
+//		return resposta;
 	}
 
-	@DeleteMapping("v1/livros/{isbn}")
-	public ResponseEntity<?> delete(@PathVariable String isbn) {
-		Optional<Livro> umLivro = servico.consultaPorIsbn(isbn);
+	@DeleteMapping("{id}")
+	public ResponseEntity<?> delete(@PathVariable Long id) {
+		Optional<Livro> umLivro = servico.consultaPorId(id);
 		if (umLivro.isPresent()) {
-			logger.info(">>>>>> 1. controller chamou servico delete por isbn => " + isbn);
+			logger.info(">>>>>> controller chamou servico delete por id => " + id);
 			servico.delete(umLivro.get().getId());
 			return ResponseEntity.ok().build();
 		} else {
-			logger.info(">>>>>> 3. controller chamou servico delete isbn nao localizado => " + isbn);
-			return ResponseEntity.ok().body("Livro não encontrado");
+			logger.info(">>>>>> controller chamou servico delete id nao localizado => " + id);
+			return ResponseEntity.notFound().build();
 		}
 
 	}
 
-	@PutMapping("v1/livros")
-	public ResponseEntity<?> replaceLivro(@RequestBody Livro livro) {
-		Optional<Livro> umLivro = servico.consultaPorIsbn(livro.getIsbn());
-		if (umLivro.isPresent()) {
-			Livro l = umLivro.get();
-			l.setAutor(livro.getAutor());
-			l.setTitulo(livro.getTitulo());
-			Livro livroAtualizado = servico.save(l);
-			return ResponseEntity.ok().body(livroAtualizado);
-		} else {
-			return ResponseEntity.ok().body("Livro não encontrado");
-		}
-
+	@PutMapping("/{id}")
+	public ResponseEntity<?> replaceLivro(@PathVariable("id") long id, @RequestBody @Valid Livro livro, BindingResult result) {
+		logger.info(">>>>>> controller chamou servico update por id ");
+		return servico.update(id, livro, result);
 	}
 }
