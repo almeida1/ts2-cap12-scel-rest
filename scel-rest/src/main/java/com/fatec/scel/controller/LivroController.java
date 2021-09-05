@@ -71,9 +71,16 @@ public class LivroController {
 		}
 
 	}
+	/**
+	 * atualiza as informacoes do livro
+	 * @param id
+	 * @param livro
+	 * @param result
+	 * @return
+	 */
 
 	@PutMapping("/{id}")
-	public ResponseEntity<?> replaceLivro(@PathVariable("id") long id, @RequestBody @Valid Livro livro, BindingResult result) {
+	public ResponseEntity<?> replace(@PathVariable("id") long id, @RequestBody @Valid Livro livro, BindingResult result) {
 		logger.info(">>>>>> controller chamou servico update por id ");
 		return servico.update(id, livro, result);
 	}
