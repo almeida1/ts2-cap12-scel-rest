@@ -8,6 +8,7 @@ import javax.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
@@ -62,6 +63,8 @@ public class LivroServicoI implements LivroServico {
 				Livro novoLivro = repository.save(livro); // retorna o livro com id
 				logger.info(">>>>>> servico save - cadastro realizado com sucesso");
 				response = ResponseEntity.ok(novoLivro);
+				//response = ResponseEntity.ok(novoLivro).status(HttpStatus.CREATED).build();
+				//response = ResponseEntity.status(HttpStatus.CREATED).build();
 			}
 
 		}
