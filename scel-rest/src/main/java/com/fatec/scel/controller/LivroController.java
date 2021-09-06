@@ -64,7 +64,7 @@ public class LivroController {
 		if (umLivro.isPresent()) {
 			logger.info(">>>>>> controller chamou servico delete por id => " + id);
 			servico.delete(umLivro.get().getId());
-			return ResponseEntity.ok().build();
+			return ResponseEntity.noContent().build();
 		} else {
 			logger.info(">>>>>> controller chamou servico delete id nao localizado => " + id);
 			return ResponseEntity.notFound().build();
