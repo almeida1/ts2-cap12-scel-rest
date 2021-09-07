@@ -2,16 +2,25 @@ package com.fatec.scel.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import com.fatec.scel.model.Livro;
 import com.fatec.scel.model.LivroRepository;
+import com.google.gson.Gson;
+
 import org.springframework.web.client.RestClientException;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -22,16 +31,21 @@ class REQ01CadastarLivroControllerTests {
 	TestRestTemplate testRestTemplate;
 	@Autowired
 	LivroRepository repository;
-
+	Logger logger = LogManager.getLogger(LivroController.class);
 	@Test
 	void ct01_quando_seleciona_cadastrar_livro_retorna_200() {
 		// Dado - que o servico está disponivel e o livro nao esta cadastrado
-		// Quando - o usuario faz uma requisicao POST para cadastrar livro
 		Livro livro = new Livro("3333", "User Stories", "Cohn");
-		HttpEntity<Livro> httpEntity = new HttpEntity<>(livro);
+		Gson gson = new Gson();
+		String entity = gson.toJson(livro);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<String> httpEntity = new HttpEntity<String>(entity, headers);
+		// Quando - o usuario faz uma requisicao POST para cadastrar livro
 		ResponseEntity<String> resposta = testRestTemplate.exchange(urlBase, HttpMethod.POST, httpEntity, String.class);
 		// Entao - retorna HTTP200
-		assertEquals("200 OK", resposta.getStatusCode().toString());
+		assertEquals("201 CREATED", resposta.getStatusCode().toString());
+		assertEquals(HttpStatus.CREATED, resposta.getStatusCode());
 		String bodyEsperado = "{\"id\":3,\"isbn\":\"3333\",\"titulo\":\"User Stories\",\"autor\":\"Cohn\"}";
 	// {"id" : 3,"isbn": "3333", "titulo" : "User Stories","autor" : "Cohn" }
 		assertEquals(bodyEsperado, resposta.getBody());
@@ -104,6 +118,34 @@ class REQ01CadastarLivroControllerTests {
 		// Entao - retorna HTTP200
 		assertEquals("400 BAD_REQUEST", resposta.getStatusCode().toString());
 
+	}
+	@Test
+	void ct08_quando_dados_invalidos_retorna_400() {
+		// Dado - que o servico está disponivel e o autor está em branco
+		// Quando - o usuario faz uma requisicao POST para cadastrar livro
+		//String entity = "{ "id\":3,"isbn":"3333","titulo":"User Stories","autor":"Cohn" }";
+		Livro livro = new Livro("4444", "Código Limpo", "Martin");
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		JSONObject j = new JSONObject();
+		try {
+			j.put("isbn", "4444");
+			j.put("titulo", "Código Limpo");
+			j.put("autor", "Martin");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Gson gson = new Gson();
+		String entity = gson.toJson(livro);
+		logger.info(">>>>>> arquivo json => " + entity);
+		
+		HttpEntity<String> httpEntity = new HttpEntity<String>(j.toString(), headers);
+		ResponseEntity<String> resposta = testRestTemplate.exchange(urlBase, HttpMethod.POST, httpEntity, String.class);
+		// Entao - retorna HTTP201
+		
+		assertEquals(HttpStatus.CREATED, resposta.getStatusCode());
+		
 	}
 	/*
 	 * retorno esperado objeto Java

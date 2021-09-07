@@ -33,9 +33,30 @@ public class LivroController {
 
 	Logger logger = LogManager.getLogger(LivroController.class);
 
-	@PostMapping
+	@PostMapping (consumes = "application/json", produces = "application/json")
 	public ResponseEntity<?> create(@RequestBody @Valid Livro livro, BindingResult result) {
-		return servico.save(livro, result);
+		ResponseEntity<?> response = null;
+		if (result.hasErrors()) {
+			logger.info(">>>>>> controller create - dados inválidos => " + livro.getIsbn());
+			response = ResponseEntity.badRequest().body("Dados inválidos.");
+		} else {
+
+			Optional<Livro> umLivro = Optional.ofNullable(servico.consultaPorIsbn(livro.getIsbn()));
+			if (umLivro.isPresent()) {
+				logger.info(">>>>>> controller create - livro já cadastrado");
+				response = ResponseEntity.badRequest().body("Livro já cadastrado");
+			} else {
+				//Livro novoLivro = repository.save(livro); // retorna o livro com id
+				//response = ResponseEntity.ok(novoLivro);
+				//response = ResponseEntity.ok(novoLivro).status(HttpStatus.CREATED).build();
+				//response = ResponseEntity.status(HttpStatus.CREATED).build();
+				response = ResponseEntity.status(HttpStatus.CREATED).body(servico.save(livro));
+				logger.info(">>>>>> controller create - cadastro realizado com sucesso");
+			}
+
+		}
+
+		return response;
 	}
 
 	@CrossOrigin // desabilita o cors do spring security
