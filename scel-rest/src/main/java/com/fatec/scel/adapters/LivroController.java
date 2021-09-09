@@ -1,4 +1,4 @@
-package com.fatec.scel.controller;
+package com.fatec.scel.adapters;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,15 +21,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fatec.scel.model.Livro;
-
-import com.fatec.scel.servico.LivroServico;
+import com.fatec.scel.mantemLivro.model.Livro;
+import com.fatec.scel.mantemLivro.ports.LivroServico;
 
 @RestController
 @RequestMapping("/api/v1/livros")
 public class LivroController {
 	@Autowired
-	LivroServico servico;
+	LivroServico servico; //controller nao conhece a implementacao 
 
 	Logger logger = LogManager.getLogger(LivroController.class);
 

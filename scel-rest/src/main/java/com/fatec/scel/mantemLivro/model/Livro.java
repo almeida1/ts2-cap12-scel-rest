@@ -1,4 +1,4 @@
-package com.fatec.scel.model;
+package com.fatec.scel.mantemLivro.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

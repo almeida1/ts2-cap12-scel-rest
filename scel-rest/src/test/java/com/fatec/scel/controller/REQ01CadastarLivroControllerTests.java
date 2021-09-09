@@ -17,8 +17,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import com.fatec.scel.model.Livro;
-import com.fatec.scel.model.LivroRepository;
+
+import com.fatec.scel.adapters.LivroController;
+import com.fatec.scel.mantemLivro.model.Livro;
+import com.fatec.scel.mantemLivro.ports.LivroRepository;
 import com.google.gson.Gson;
 
 import org.springframework.web.client.RestClientException;

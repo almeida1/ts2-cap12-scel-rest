@@ -1,4 +1,4 @@
-package com.fatec.scel.servico;
+package com.fatec.scel.mantemLivro.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,8 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
-import com.fatec.scel.model.Livro;
-import com.fatec.scel.model.LivroRepository;
+import com.fatec.scel.mantemLivro.model.Livro;
+import com.fatec.scel.mantemLivro.ports.LivroRepository;
+import com.fatec.scel.mantemLivro.ports.LivroServico;
 
 @Service
 public class LivroServicoI implements LivroServico {
