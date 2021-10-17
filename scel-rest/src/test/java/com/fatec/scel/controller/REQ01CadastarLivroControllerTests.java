@@ -18,7 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
-import com.fatec.scel.adapters.LivroController;
+import com.fatec.scel.adapters.APILivroController;
 import com.fatec.scel.mantemLivro.model.Livro;
 import com.fatec.scel.mantemLivro.ports.LivroRepository;
 import com.google.gson.Gson;
@@ -33,7 +33,7 @@ class REQ01CadastarLivroControllerTests {
 	TestRestTemplate testRestTemplate;
 	@Autowired
 	LivroRepository repository;
-	Logger logger = LogManager.getLogger(LivroController.class);
+	Logger logger = LogManager.getLogger(APILivroController.class);
 	@Test
 	void ct01_quando_seleciona_cadastrar_livro_retorna_200() {
 		// Dado - que o servico está disponivel e o livro nao esta cadastrado

@@ -26,11 +26,11 @@ import com.fatec.scel.mantemLivro.ports.LivroServico;
 
 @RestController
 @RequestMapping("/api/v1/livros")
-public class LivroController {
+public class APILivroController {
 	@Autowired
 	LivroServico servico; //controller nao conhece a implementacao 
 
-	Logger logger = LogManager.getLogger(LivroController.class);
+	Logger logger = LogManager.getLogger(APILivroController.class);
 
 	@PostMapping (consumes = "application/json", produces = "application/json")
 	public ResponseEntity<?> create(@RequestBody @Valid Livro livro, BindingResult result) {
