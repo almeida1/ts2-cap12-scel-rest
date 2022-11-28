@@ -56,7 +56,7 @@ class REQ022ConsultarLivroTests {
 		// Quando - o usuario consulta o isbn
 		ResponseEntity<String> resposta = testRestTemplate.getForEntity(urlBase + isbn, String.class);
 		// Entao - retorna not found
-		assertEquals("400 BAD_REQUEST", resposta.getStatusCode().toString());
-		assertEquals("ISBN não localizado", resposta.getBody());
+		assertEquals("404 NOT_FOUND", resposta.getStatusCode().toString());
+		
 	}
 }

@@ -1,9 +1,9 @@
 package com.fatec.scel.adapters;
 
-
-
+import java.util.Optional;
 
 import javax.validation.Valid;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.fatec.scel.mantemLivro.model.Livro;
 import com.fatec.scel.mantemLivro.ports.LivroServico;
-
 
 @Controller
 @RequestMapping(path = "/gui")
@@ -64,7 +63,7 @@ public class GUILivroController {
 			try {
 				servico.save(livro);
 				modelAndView.addObject("livros", servico.consultaTodos());
-			} catch (Exception e) { //captura validacoes na camada de persistencia
+			} catch (Exception e) { // captura validacoes na camada de persistencia
 				modelAndView.setViewName("cadastrarLivro");
 				modelAndView.addObject("message", "Livro ja cadastrado");
 				logger.error("erro na camada de persistencia ==> " + e.getMessage());
@@ -75,19 +74,22 @@ public class GUILivroController {
 
 	@PostMapping("/livros/{id}")
 	public ModelAndView atualizaLivro(@PathVariable("id") Long id, @Valid Livro livro, BindingResult result) {
+		ModelAndView mv = new ModelAndView("atualizarLivro");
 		if (result.hasErrors()) {
 			livro.setId(id);
-			return new ModelAndView("atualizarLivro");
 		}
-		// programacao defensiva - melhorar deve-se verificar se o livro existe antes de atualizar
-		Livro umLivro = servico.consultaPorId(id).get();
-		umLivro.setAutor(livro.getAutor());
-		umLivro.setIsbn(livro.getIsbn());
-		umLivro.setTitulo(livro.getTitulo());
-		servico.save(umLivro);
-		ModelAndView modelAndView = new ModelAndView("consultarLivro");
-		modelAndView.addObject("livros", servico.consultaTodos());
-		return modelAndView;
+		else {
+			Optional<Livro> umLivro = servico.consultaPorId(id);
+			if (umLivro.isPresent()) {
+				Livro atualizado = umLivro.get();
+				atualizado.setAutor(livro.getAutor());
+				atualizado.setIsbn(livro.getIsbn());
+				atualizado.setTitulo(livro.getTitulo());
+				servico.save(atualizado);
+				mv.setViewName("consultarLivro");
+				mv.addObject("livros", servico.consultaTodos());
+			} 
+		} 
+		return mv;
 	}
 }
-

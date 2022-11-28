@@ -31,8 +31,7 @@ public class LivroServicoI implements LivroServico {
 		return repository.findById(livro.getId()).map(record -> {
 			record.setAutor(livro.getAutor());
 			record.setTitulo(livro.getTitulo());
-			Optional<Livro> atualizado = Optional.of(save(livro));
-			return atualizado;
+			return Optional.of(save(livro));
 		}).orElse(Optional.empty());
 	}
 	@Override

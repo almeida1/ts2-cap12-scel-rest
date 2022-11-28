@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fatec.scel.mantemLivro.model.Livro;
 import com.fatec.scel.mantemLivro.ports.LivroServico;
+import com.google.gson.Gson;
 @RestController
 @RequestMapping("/api/v1/livros")
 public class APILivroController {
@@ -33,7 +34,7 @@ public class APILivroController {
 	public ResponseEntity<?> create(@RequestBody @Valid Livro livro, BindingResult result) {
 		ResponseEntity<?> response = null;
 		if (result.hasErrors()) {
-			logger.info(">>>>>> controller create - dados inválidos => " + livro.getIsbn());
+			logger.info(">>>>>> controller create - dados inválidos ");
 			response = ResponseEntity.badRequest().body("Dados inválidos.");
 		} else {
 
@@ -57,20 +58,20 @@ public class APILivroController {
 	}
 
 	@GetMapping("/{isbn}")
-	public ResponseEntity<?> findByIsbn(@PathVariable String isbn) {
+	public ResponseEntity<Livro> findByIsbn(@PathVariable String isbn) {
 		logger.info(">>>>>> controller chamou servico consulta por isbn => " + isbn);
 //		return Optional.ofNullable(servico.consultaPorIsbn(isbn)).map(record -> ResponseEntity.ok().body(record) ).orElse(ResponseEntity.notFound().build());
 		Optional<Livro> umLivro = servico.consultaPorIsbn(isbn);
-		ResponseEntity<?> resposta = null;
+		ResponseEntity<Livro> resposta = null;
 		if (umLivro.isPresent())
-			resposta = new ResponseEntity<Livro>(umLivro.get(), HttpStatus.OK);
+			resposta = ResponseEntity.status(HttpStatus.OK).body(umLivro.get());
 		else
-			resposta = new ResponseEntity<String>("ISBN não localizado",HttpStatus.BAD_REQUEST);
+			resposta = ResponseEntity.notFound().build();
 		return resposta;
 	}
 
 	@DeleteMapping("{id}")
-	public ResponseEntity<?> delete(@PathVariable Long id) {
+	public ResponseEntity<String> delete(@PathVariable Long id) {
 		Optional<Livro> umLivro = servico.consultaPorId(id);
 		if (umLivro.isPresent()) {
 			logger.info(">>>>>> controller chamou servico delete por id => " + id);
@@ -91,17 +92,21 @@ public class APILivroController {
 	 */
 
 	@PutMapping("/{id}")
-	public ResponseEntity<?> replace(@PathVariable("id") long id, @RequestBody @Valid Livro livro, BindingResult result) {
+	public ResponseEntity<String> replace(@PathVariable("id") long id, @RequestBody @Valid Livro livro, BindingResult result) {
 		logger.info(">>>>>> controller chamou servico update por id ");
 		if (result.hasErrors()) {
 			logger.info(">>>>>> servico save - dados inválidos => " + livro.getIsbn());
-			return ResponseEntity.badRequest().body("Dados inválidos.");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Dados inválidos.");
 		} else {
 			Optional<Livro> umLivro = servico.update(livro);
-			if (umLivro.isPresent())
-				return ResponseEntity.ok().body(umLivro.get());
+			
+			if (umLivro.isPresent()) {
+				Gson resposta = new Gson();
+				String livrojson = resposta.toJson(umLivro.get(), Livro.class);
+				return ResponseEntity.status(HttpStatus.OK).body(livrojson);
+			}
 			else 
-				return ResponseEntity.notFound().build();
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
 	}
 }
