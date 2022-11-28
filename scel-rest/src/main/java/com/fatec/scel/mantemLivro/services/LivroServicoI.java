@@ -8,8 +8,6 @@ import javax.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
@@ -26,53 +24,35 @@ public class LivroServicoI implements LivroServico {
 	@Override
 	public List<Livro> consultaTodos() {
 		return repository.findAll();
-
 	}
-
 	@Override
-	public ResponseEntity<?> update(Long id, @Valid Livro livro, BindingResult result) {
+	public Optional<Livro> update(Livro livro) {
 		logger.info(">>>>>> servico update chamado");
-
-		if (result.hasErrors()) {
-			logger.info(">>>>>> servico save - dados inválidos => " + livro.getIsbn());
-			return ResponseEntity.badRequest().body("Dados inválidos.");
-		} else {
-			return repository.findById(id).map(record -> {
-				record.setAutor(livro.getAutor());
-				record.setTitulo(livro.getTitulo());
-				Livro atualizado = repository.save(livro);
-				return ResponseEntity.ok().body(atualizado);
-			}).orElse(ResponseEntity.notFound().build());
-
-		}
-
+		return repository.findById(livro.getId()).map(record -> {
+			record.setAutor(livro.getAutor());
+			record.setTitulo(livro.getTitulo());
+			Optional<Livro> atualizado = Optional.of(save(livro));
+			return atualizado;
+		}).orElse(Optional.empty());
 	}
-
 	@Override
 	public Livro save(Livro livro) {
 		logger.info(">>>>>> servico save - cadastro de livro ");
 		return repository.save(livro); // retorna o livro com id
-
 	}
-
-	
 	@Override
 	public Optional<Livro> consultaPorId(Long id) {
 		logger.info(">>>>>> servico consulta por id chamado");
 		return repository.findById(id);
 	}
-
 	@Override
-	public Livro consultaPorIsbn(String isbn) {
+	public Optional<Livro> consultaPorIsbn(String isbn) {
 		logger.info(">>>>>> servico consulta por isbn chamado");
-		return repository.findByIsbn(isbn);
-
+	return Optional.ofNullable(repository.findByIsbn(isbn));
 	}
-
 	@Override
 	public void delete(Long id) {
 		logger.info(">>>>>> servico delete por id chamado");
 		repository.deleteById(id);
 	}
-
 }

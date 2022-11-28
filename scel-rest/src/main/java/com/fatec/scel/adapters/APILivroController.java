@@ -23,15 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fatec.scel.mantemLivro.model.Livro;
 import com.fatec.scel.mantemLivro.ports.LivroServico;
-
 @RestController
 @RequestMapping("/api/v1/livros")
 public class APILivroController {
 	@Autowired
 	LivroServico servico; //controller nao conhece a implementacao 
-
 	Logger logger = LogManager.getLogger(APILivroController.class);
-
 	@PostMapping (consumes = "application/json", produces = "application/json")
 	public ResponseEntity<?> create(@RequestBody @Valid Livro livro, BindingResult result) {
 		ResponseEntity<?> response = null;
@@ -40,21 +37,15 @@ public class APILivroController {
 			response = ResponseEntity.badRequest().body("Dados inválidos.");
 		} else {
 
-			Optional<Livro> umLivro = Optional.ofNullable(servico.consultaPorIsbn(livro.getIsbn()));
+			Optional<Livro> umLivro = servico.consultaPorIsbn(livro.getIsbn());
 			if (umLivro.isPresent()) {
 				logger.info(">>>>>> controller create - livro já cadastrado");
 				response = ResponseEntity.badRequest().body("Livro já cadastrado");
 			} else {
-				//Livro novoLivro = repository.save(livro); // retorna o livro com id
-				//response = ResponseEntity.ok(novoLivro);
-				//response = ResponseEntity.ok(novoLivro).status(HttpStatus.CREATED).build();
-				//response = ResponseEntity.status(HttpStatus.CREATED).build();
 				response = ResponseEntity.status(HttpStatus.CREATED).body(servico.save(livro));
 				logger.info(">>>>>> controller create - cadastro realizado com sucesso");
 			}
-
 		}
-
 		return response;
 	}
 
@@ -69,7 +60,7 @@ public class APILivroController {
 	public ResponseEntity<?> findByIsbn(@PathVariable String isbn) {
 		logger.info(">>>>>> controller chamou servico consulta por isbn => " + isbn);
 //		return Optional.ofNullable(servico.consultaPorIsbn(isbn)).map(record -> ResponseEntity.ok().body(record) ).orElse(ResponseEntity.notFound().build());
-		Optional<Livro> umLivro = Optional.ofNullable(servico.consultaPorIsbn(isbn));
+		Optional<Livro> umLivro = servico.consultaPorIsbn(isbn);
 		ResponseEntity<?> resposta = null;
 		if (umLivro.isPresent())
 			resposta = new ResponseEntity<Livro>(umLivro.get(), HttpStatus.OK);
@@ -93,15 +84,24 @@ public class APILivroController {
 	}
 	/**
 	 * atualiza as informacoes do livro
-	 * @param id
-	 * @param livro
-	 * @param result
-	 * @return
+	 * @param id - identificador do livro se nao for encotrado retorna not found
+	 * @param livro - livro com informacoes atualizadas
+	 * @param result - resultado da validação das informacoes envidadas pelo usuario
+	 * @return - o codigo http da operação e o body
 	 */
 
 	@PutMapping("/{id}")
 	public ResponseEntity<?> replace(@PathVariable("id") long id, @RequestBody @Valid Livro livro, BindingResult result) {
 		logger.info(">>>>>> controller chamou servico update por id ");
-		return servico.update(id, livro, result);
+		if (result.hasErrors()) {
+			logger.info(">>>>>> servico save - dados inválidos => " + livro.getIsbn());
+			return ResponseEntity.badRequest().body("Dados inválidos.");
+		} else {
+			Optional<Livro> umLivro = servico.update(livro);
+			if (umLivro.isPresent())
+				return ResponseEntity.ok().body(umLivro.get());
+			else 
+				return ResponseEntity.notFound().build();
+		}
 	}
 }
