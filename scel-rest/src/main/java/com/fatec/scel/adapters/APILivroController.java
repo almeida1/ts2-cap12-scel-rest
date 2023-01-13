@@ -30,12 +30,14 @@ public class APILivroController {
 	@Autowired
 	LivroServico servico; //controller nao conhece a implementacao 
 	Logger logger = LogManager.getLogger(APILivroController.class);
+	@CrossOrigin // desabilita o cors do spring security
 	@PostMapping (consumes = "application/json", produces = "application/json")
 	public ResponseEntity<?> create(@RequestBody @Valid Livro livro, BindingResult result) {
 		ResponseEntity<?> response = null;
 		if (result.hasErrors()) {
 			logger.info(">>>>>> controller create - dados inválidos ");
 			response = ResponseEntity.badRequest().body("Dados inválidos.");
+			//the server cannot or will not process the request due to something that is perceived to be a client error
 		} else {
 
 			Optional<Livro> umLivro = servico.consultaPorIsbn(livro.getIsbn());
@@ -56,7 +58,7 @@ public class APILivroController {
 		logger.info(">>>>>> controller chamou servico consulta todos");
 		return ResponseEntity.ok().body(servico.consultaTodos());
 	}
-
+	@CrossOrigin // desabilita o cors do spring security
 	@GetMapping("/{isbn}")
 	public ResponseEntity<Livro> findByIsbn(@PathVariable String isbn) {
 		logger.info(">>>>>> controller chamou servico consulta por isbn => " + isbn);
@@ -69,19 +71,20 @@ public class APILivroController {
 			resposta = ResponseEntity.notFound().build();
 		return resposta;
 	}
-
-	@DeleteMapping("{id}")
-	public ResponseEntity<String> delete(@PathVariable Long id) {
+	@CrossOrigin // desabilita o cors do spring security
+	@DeleteMapping("/{id}")
+	public ResponseEntity<?> delete(@PathVariable Long id) {
+		logger.info(">>>>>> controller chamou servico delete por id => " + id);
 		Optional<Livro> umLivro = servico.consultaPorId(id);
 		if (umLivro.isPresent()) {
-			logger.info(">>>>>> controller chamou servico delete por id => " + id);
 			servico.delete(umLivro.get().getId());
-			return ResponseEntity.noContent().build();
+			return ResponseEntity.ok().build();
+			//return ResponseEntity.noContent().build();
 		} else {
 			logger.info(">>>>>> controller chamou servico delete id nao localizado => " + id);
 			return ResponseEntity.notFound().build();
 		}
-
+		
 	}
 	/**
 	 * atualiza as informacoes do livro
@@ -90,12 +93,12 @@ public class APILivroController {
 	 * @param result - resultado da validação das informacoes envidadas pelo usuario
 	 * @return - o codigo http da operação e o body
 	 */
-
+	@CrossOrigin // desabilita o cors do spring security
 	@PutMapping("/{id}")
 	public ResponseEntity<String> replace(@PathVariable("id") long id, @RequestBody @Valid Livro livro, BindingResult result) {
 		logger.info(">>>>>> controller chamou servico update por id ");
 		if (result.hasErrors()) {
-			logger.info(">>>>>> servico save - dados inválidos => " + livro.getIsbn());
+			logger.info(">>>>>> servico save - dados inválidos => " + result.getFieldErrors());
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Dados inválidos.");
 		} else {
 			Optional<Livro> umLivro = servico.update(livro);
@@ -109,4 +112,12 @@ public class APILivroController {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
 	}
+	@CrossOrigin // desabilita o cors do spring security
+	@GetMapping("/id/{id}")
+	ResponseEntity<?> findById(@PathVariable Long id) {
+		logger.info(">>>>>> controller chamou servico consulta por id " + id);
+        Optional<Livro> livro = servico.consultaPorId(id);
+        return livro.map(response -> ResponseEntity.ok().body(response))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
 }
